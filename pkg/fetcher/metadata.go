@@ -1,8 +1,10 @@
 package fetcher
 
 import (
-	"golang.org/x/net/html"
+	"errors"
 	"io"
+
+	"golang.org/x/net/html"
 )
 
 // targetMetadata is a map of HTML tags whose attributes (e.g., "src" or "href") should be extracted.
@@ -32,7 +34,7 @@ func (c *client) ExtractMetadata(file io.Reader) ([]string, error) {
 		switch {
 		case tokenType == html.ErrorToken:
 			err := tokenizer.Err()
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				// End of file reached.
 				return assets, nil
 			}

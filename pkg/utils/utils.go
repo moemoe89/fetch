@@ -9,6 +9,7 @@ import (
 func URLToFilename(url string) string {
 	// Compile the regular expression to remove the prefixes.
 	re := regexp.MustCompile(`https?://(www\.)?`)
+
 	return re.ReplaceAllString(url, "")
 }
 
@@ -31,7 +32,7 @@ func WrapURL(url, path string) string {
 	}
 
 	if len(path) > 0 && string(path[0]) != "/" {
-		url = url + "/"
+		url += "/"
 	}
 
 	return url + path

@@ -20,8 +20,8 @@ test:
 	mkdir -p .coverage/html
 	go test -v -race -cover -coverprofile=.coverage/pkg.coverage.tmp ./pkg/... && \
 	cat .coverage/pkg.coverage.tmp | grep -v "_mock.go\|_mockgen.go" > .coverage/pkg.coverage && \
-	rm .coverage/pkg.coverage .coverage/pkg.coverage.tmp
 	go tool cover -html=.coverage/pkg.coverage -o .coverage/html/pkg.coverage.html;
+	rm .coverage/pkg.coverage .coverage/pkg.coverage.tmp
 
 clean:
 	go clean

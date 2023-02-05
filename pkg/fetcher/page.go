@@ -19,14 +19,15 @@ func (c *client) FetchPage(ctx context.Context, url string) ([]byte, error) {
 	// Make the GET request.
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to do HTTP request: %w", err)
 	}
+
 	defer func() { _ = resp.Body.Close() }()
 
 	// Read all the data from the response body.
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 
 	return body, nil
@@ -35,10 +36,5 @@ func (c *client) FetchPage(ctx context.Context, url string) ([]byte, error) {
 // SavePage writes the provided body to a file with the specified filename.
 func (c *client) SavePage(filename string, body []byte) error {
 	// Write the body to the file.
-	err := os.WriteFile(filename, body, 0644)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return os.WriteFile(filename, body, 0644)
 }

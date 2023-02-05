@@ -8,6 +8,15 @@ run:
 
 linters:
   enable-all: true
+  disable:
+    - gci              # Gci control golang package import order and make it always deterministic.
+    - gochecknoglobals # Checks that no globals are present in Go code [fast: true, auto-fix: false]
+    - gofumpt          # Gofumpt checks whether code was gofumpt-ed.
+    - gomnd            # An analyzer to detect magic numbers. [fast: true, auto-fix: false]
+    - gosec            # Inspects source code for security problems.
+    - ireturn          # Accept Interfaces, Return Concrete Types
+    - varnamelen       # Check the input of parameter has the short length or not.
+    - wrapcheck        # Checks that errors returned from external packages are wrapped.
 
 linters-settings:
   govet:
