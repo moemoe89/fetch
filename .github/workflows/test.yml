@@ -1,0 +1,30 @@
+name: Test
+
+on:
+  workflow_call:
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '>=1.19.x'
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-golang-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-golang-
+      - name: Run Tests
+        run: |
+          make test
+      - name: Upload Test Coverage Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-coverage
+          path: .coverage/html

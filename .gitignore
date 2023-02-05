@@ -1,0 +1,15 @@
+main
+fetch
+
+.coverage
+.godog
+*.DS_Store
+*.log
+
+vendor/
+
+*.out
+
+*.com*
+*.html
+*.zip

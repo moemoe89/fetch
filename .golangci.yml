@@ -1,0 +1,18 @@
+# https://golangci-lint.run/usage/configuration/
+run:
+  skip-files:
+    - ".*_mock\\.go"
+  tests: false
+  deadline: 5m
+  print-resources-usage: true
+
+linters:
+  enable-all: true
+
+linters-settings:
+  govet:
+    # https://github.com/golangci/golangci-lint/issues/484
+    # report about shadowed variables
+    check-shadowing: false
+  lll:
+    line-length: 150
