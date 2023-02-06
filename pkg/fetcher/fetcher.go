@@ -11,23 +11,28 @@ import (
 	"net/http"
 )
 
-// errFailedSetHTTPClient represents an error message when the process of setting
-// the HTTP client fails.
+// errFailedSetHTTPClient represents an error message when the process of setting the HTTP client fails.
 var errFailedSetHTTPClient = errors.New("failed to set client.http_client")
 
 // Fetcher is an interface that defines the methods for fetching a page from a website
 // and saving it to disk, as well as extracting metadata about the page.
 type Fetcher interface {
 	// FetchPage fetches the contents of a web page and returns it as a byte slice.
-	// The url argument specifies the web page to be fetched.
-	// The ctx argument is a context for fetching the web page.
+	// The `url` argument specifies the web page to be fetched.
+	// The `ctx` argument is a context for fetching the web page.
 	FetchPage(ctx context.Context, url string) ([]byte, error)
 	// SavePage saves the contents of a web page to a file on disk.
-	// The url argument specifies the web page to be saved.
-	// The body argument is a byte slice containing the contents of the web page.
+	// The `filename` argument specifies the web page path to be saved.
+	// The `body` argument is a byte slice containing the contents of the web page.
 	SavePage(filename string, body []byte) error
-	// ExtractMetadata extracts metadata about a web page, such as the number of links and images.
-	ExtractMetadata(file io.Reader) ([]string, error)
+	// ExtractMetadata extracts metadata about a web page,
+	// such as the site url, number of links and images, assets url and last fetch.
+	// The `url` argument specifies the web page url in order to put in metadata.
+	// The `filePath` argument specifies file path for metadata JSON on disk.
+	ExtractMetadata(url, filePath string, file io.Reader) (*Metadata, error)
+	// StringMetadata return string of metadata such as site, number of links and images
+	// and last fetch to show on the console.
+	StringMetadata(metadata *Metadata) string
 	// Zip zips the given `filePaths` and `dirs` into a single archive file specified by `filename`.
 	Zip(filename string, filePaths, dirs []string) error
 }

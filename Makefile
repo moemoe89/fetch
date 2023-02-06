@@ -23,5 +23,16 @@ test:
 	go tool cover -html=.coverage/pkg.coverage -o .coverage/html/pkg.coverage.html;
 	rm .coverage/pkg.coverage .coverage/pkg.coverage.tmp
 
+.PHONY: build
+
+build:
+	go build -o fetch ./cmd
+
+docker-build:
+	docker build -t fetch -f ./build/Dockerfile .
+
+docker-run:
+	docker run --rm -it fetch sh
+
 clean:
 	go clean

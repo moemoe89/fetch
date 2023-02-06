@@ -11,5 +11,8 @@ vendor/
 *.out
 
 *.com*
+*.io*
+*.org*
+
 *.html
 *.zip

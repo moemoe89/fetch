@@ -27,7 +27,7 @@ func (c *client) FetchPage(ctx context.Context, url string) ([]byte, error) {
 	// Read all the data from the response body.
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read body: %w", err)
 	}
 
 	return body, nil
@@ -36,5 +36,10 @@ func (c *client) FetchPage(ctx context.Context, url string) ([]byte, error) {
 // SavePage writes the provided body to a file with the specified filename.
 func (c *client) SavePage(filename string, body []byte) error {
 	// Write the body to the file.
-	return os.WriteFile(filename, body, 0644)
+	err := os.WriteFile(filename, body, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to write file: %w", err)
+	}
+
+	return nil
 }

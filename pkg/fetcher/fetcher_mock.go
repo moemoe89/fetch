@@ -37,18 +37,18 @@ func (m *GoMockClient) EXPECT() *GoMockClientMockRecorder {
 }
 
 // ExtractMetadata mocks base method.
-func (m *GoMockClient) ExtractMetadata(file io.Reader) ([]string, error) {
+func (m *GoMockClient) ExtractMetadata(url, filePath string, file io.Reader) (*Metadata, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExtractMetadata", file)
-	ret0, _ := ret[0].([]string)
+	ret := m.ctrl.Call(m, "ExtractMetadata", url, filePath, file)
+	ret0, _ := ret[0].(*Metadata)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ExtractMetadata indicates an expected call of ExtractMetadata.
-func (mr *GoMockClientMockRecorder) ExtractMetadata(file interface{}) *gomock.Call {
+func (mr *GoMockClientMockRecorder) ExtractMetadata(url, filePath, file interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtractMetadata", reflect.TypeOf((*GoMockClient)(nil).ExtractMetadata), file)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtractMetadata", reflect.TypeOf((*GoMockClient)(nil).ExtractMetadata), url, filePath, file)
 }
 
 // FetchPage mocks base method.
@@ -78,6 +78,20 @@ func (m *GoMockClient) SavePage(filename string, body []byte) error {
 func (mr *GoMockClientMockRecorder) SavePage(filename, body interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SavePage", reflect.TypeOf((*GoMockClient)(nil).SavePage), filename, body)
+}
+
+// StringMetadata mocks base method.
+func (m *GoMockClient) StringMetadata(metadata *Metadata) string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StringMetadata", metadata)
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// StringMetadata indicates an expected call of StringMetadata.
+func (mr *GoMockClientMockRecorder) StringMetadata(metadata interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StringMetadata", reflect.TypeOf((*GoMockClient)(nil).StringMetadata), metadata)
 }
 
 // Zip mocks base method.
