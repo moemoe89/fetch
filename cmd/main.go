@@ -80,7 +80,7 @@ func usage() {
 	flag.PrintDefaults()
 }
 
-func fetchPage(client fetcher.Fetcher, url string) error { //nolint: funlen,cyclop
+func fetchPage(client fetcher.Fetcher, url string) error {
 	body, err := client.FetchPage(context.Background(), url)
 	if err != nil {
 		return fmt.Errorf("failed to fetch page: %s: %w", url, err)
@@ -118,6 +118,35 @@ func fetchPage(client fetcher.Fetcher, url string) error { //nolint: funlen,cycl
 
 	newBody := string(body)
 
+	newBody, err = fetchAssets(client, metadata, dir, newBody)
+	if err != nil {
+		return err
+	}
+
+	// Save HTML page.
+	err = client.SavePage(htmlFile, []byte(newBody))
+	if err != nil {
+		return fmt.Errorf("failed to save page: %s: %w", url, err)
+	}
+
+	// Zip assets and HTML file.
+	err = client.Zip(zipFile, []string{htmlFile}, []string{dir})
+	if err != nil {
+		return fmt.Errorf("failed to zip page: %s: %w", url, err)
+	}
+
+	// Print the metadata string.
+	stringMetadata := client.StringMetadata(metadata)
+	_, _ = io.WriteString(os.Stderr, stringMetadata)
+
+	return nil
+}
+
+func fetchAssets(
+	client fetcher.Fetcher,
+	metadata *fetcher.Metadata,
+	dir, newBody string,
+) (string, error) {
 	var wg sync.WaitGroup
 
 	var mutex sync.Mutex
@@ -135,7 +164,7 @@ func fetchPage(client fetcher.Fetcher, url string) error { //nolint: funlen,cycl
 			// Sometimes URL not contains full URL e.g. /dir/image.png
 			// To download the assets, assume it falls under target URL.
 			// e.g. www.example.com/dir/image.png
-			wrapAsset := utils.WrapURL(url, asset)
+			wrapAsset := utils.WrapURL(metadata.Site, asset)
 
 			body, err := client.FetchPage(context.Background(), wrapAsset)
 			if err != nil {
@@ -144,17 +173,7 @@ func fetchPage(client fetcher.Fetcher, url string) error { //nolint: funlen,cycl
 				return
 			}
 
-			// Removes unnecessary characters.
-			assetFile := utils.AssetURLToFilename(wrapAsset)
-
-			// Sometimes HTML page doesn't work well if the link contains dot (.)
-			// e.g ./dir/image.png and just need /dir/image.png
-			dot := "."
-			if len(asset) > 0 && string(asset[0]) == "/" {
-				dot = ""
-			}
-
-			wrapAssetDir := utils.WrapAssetDir(dot, dir, assetFile)
+			wrapAssetDir, assetFile := buildAssetDirFile(dir, asset, wrapAsset)
 
 			mutex.Lock()
 			newBody = strings.ReplaceAll(newBody, asset, wrapAssetDir)
@@ -175,25 +194,25 @@ func fetchPage(client fetcher.Fetcher, url string) error { //nolint: funlen,cycl
 	// Handle error channel from downloading assets.
 	select {
 	case err := <-errChan:
-		return err
+		return "", err
 	default:
 	}
 
-	// Save HTML page.
-	err = client.SavePage(htmlFile, []byte(newBody))
-	if err != nil {
-		return fmt.Errorf("failed to save page: %s: %w", url, err)
+	return newBody, nil
+}
+
+func buildAssetDirFile(dir, asset, wrapAsset string) (string, string) {
+	// Removes unnecessary characters.
+	assetFile := utils.AssetURLToFilename(wrapAsset)
+
+	// Sometimes HTML page doesn't work well if the link contains dot (.)
+	// e.g ./dir/image.png and just need /dir/image.png
+	dot := "."
+	if len(asset) > 0 && string(asset[0]) == "/" {
+		dot = ""
 	}
 
-	// Zip assets and HTML file.
-	err = client.Zip(zipFile, []string{htmlFile}, []string{dir})
-	if err != nil {
-		return fmt.Errorf("failed to zip page: %s: %w", url, err)
-	}
+	wrapAssetDir := utils.WrapAssetDir(dot, dir, assetFile)
 
-	// Print the metadata string.
-	stringMetadata := client.StringMetadata(metadata)
-	_, _ = io.WriteString(os.Stderr, stringMetadata)
-
-	return nil
+	return wrapAssetDir, assetFile
 }

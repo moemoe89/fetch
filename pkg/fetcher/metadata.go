@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"time"
 
 	"golang.org/x/net/html"
@@ -40,42 +41,66 @@ func (c *client) ExtractMetadata(url, filePath string, file io.Reader) (*Metadat
 		Site: url,
 	}
 
-	// TODO:
-	// Need to research about this code.
-	// Alternative solution to fetch more assets.
-	/*
-		doc, err := html.Parse(file)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse html: %w", err)
-		}
+	err := c.parseHTML(metadata, file)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse HTML: %w", err)
+	}
 
-		var links []string
-		var f func(*html.Node)
-		f = func(n *html.Node) {
-			if n.Type == html.ElementNode && targetMetadata[n.Data] {
-				for _, a := range n.Attr {
-					if strings.Contains(a.Val, "base64") {
-						continue
-					}
+	err = c.tokenizerHTML(metadata, file)
+	if err != nil {
+		return nil, fmt.Errorf("failed to tokenizer HTML: %w", err)
+	}
 
-					if (n.Data == "img" || n.Data == "script") && a.Key == "src" {
-						links = append(links, a.Val)
-					}
+	// Save metadata to JSON file.
+	err = c.saveMetadataJSON(metadata, filePath)
+	if err != nil {
+		return nil, err
+	}
 
-					if n.Data == "link" && a.Key == "href" {
-						links = append(links, a.Val)
-					}
+	return metadata, nil
+}
+
+// parseHTML parses HTML
+func (c *client) parseHTML(metadata *Metadata, file io.Reader) error {
+	doc, err := html.Parse(file)
+	if err != nil {
+		return fmt.Errorf("failed to parse html: %w", err)
+	}
+
+	var links []string
+	var f func(*html.Node)
+	f = func(n *html.Node) {
+		if n.Type == html.ElementNode && targetMetadata[n.Data] {
+			for _, a := range n.Attr {
+				if strings.Contains(a.Val, "base64") {
+					continue
 				}
-			}
-			for c := n.FirstChild; c != nil; c = c.NextSibling {
-				f(c)
+
+				if (n.Data == "img" || n.Data == "script") && a.Key == "src" {
+					links = append(links, a.Val)
+				}
+
+				if n.Data == "link" && a.Key == "href" {
+					links = append(links, a.Val)
+				}
+
+				// Count assets like link and images.
+				c.countAssets(metadata, n.Data)
 			}
 		}
-		f(doc)
+		for c := n.FirstChild; c != nil; c = c.NextSibling {
+			f(c)
+		}
+	}
+	f(doc)
 
-		metadata.Assets = links
-	*/
+	metadata.Assets = links
 
+	return nil
+}
+
+// tokenizerHTML tokenizer HTML
+func (c *client) tokenizerHTML(metadata *Metadata, file io.Reader) error {
 	// Create a new HTML tokenizer.
 	tokenizer := html.NewTokenizer(file)
 
@@ -89,17 +114,11 @@ func (c *client) ExtractMetadata(url, filePath string, file io.Reader) (*Metadat
 
 			// If end of file reached.
 			if errors.Is(err, io.EOF) {
-				// Save metadata to JSON file.
-				err = c.saveMetadataJSON(metadata, filePath)
-				if err != nil {
-					return nil, err
-				}
-
-				return metadata, nil
+				return nil
 			}
 
 			// Return the error.
-			return nil, fmt.Errorf("failed to extract metadata: %w", tokenizer.Err())
+			return fmt.Errorf("failed to extract metadata: %w", tokenizer.Err())
 		case tokenType == html.StartTagToken:
 			token := tokenizer.Token()
 

@@ -57,7 +57,5 @@ There are several improvements that can be made to fetch in the future, such as:
 
 * Increasing test coverage.
   * Currently, crucial code lacks tests. However, the `fetcher` package implements the HTTP Client interface, making it easier to mock HTTP requests.
-* Improving metadata extraction from HTML.
-  * Currently, metadata is only extracted using a Tokenizer and some assets may be missing. To improve this, an HTML parser could be added to extract asset tags and regular expressions could be used to handle cases where images have background formats.
 * Adding volume support in Docker.
   * Currently, when run in Docker, the downloaded pages are stored inside the container. Adding volume support would allow for the storage of files on the host system.
