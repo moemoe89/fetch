@@ -25,7 +25,7 @@ jobs:
           make test
       - name: Build Badge
         run: |
-          TOTAL=$(go tool cover -func=.coverage/internal.mockless.coverage | awk -F" " '/total:/ {print $3}')
+          TOTAL=$(go tool cover -func=.coverage/pkg.mockless.coverage | awk -F" " '/total:/ {print $3}')
 
           if (( $(echo "${TOTAL%\%} >= 80" | bc -l) )) ; then
               COLOR=brightgreen
