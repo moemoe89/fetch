@@ -23,8 +23,48 @@ jobs:
       - name: Run Tests
         run: |
           make test
+      - name: Build Badge
+        run: |
+          TOTAL=$(go tool cover -func=.coverage/internal.mockless.coverage | awk -F" " '/total:/ {print $3}')
+
+          if (( $(echo "${TOTAL%\%} >= 80" | bc -l) )) ; then
+              COLOR=brightgreen
+          elif (( $(echo "${TOTAL%\%} >= 70" | bc -l) )); then
+              COLOR=yellowgreen
+          elif (( $(echo "${TOTAL%\%} >= 60" | bc -l) )); then
+              COLOR=yellow
+          elif (( $(echo "${TOTAL%\%} > 50" | bc -l) )); then
+              COLOR=orange
+          elif (( $(echo "${TOTAL%\%} <= 50" | bc -l) )); then
+              COLOR=red
+          fi
+
+          BADGE="<img src=\"https://img.shields.io/badge/coverage-${TOTAL}25-${COLOR}\">"
+
+          sed -i "/<!-- start-coverage -->/,/<!-- end-coverage -->/ s|>.*<|>${BADGE}<|" README.md
       - name: Upload Test Coverage Artifact
         uses: actions/upload-artifact@v3
         with:
           name: code-coverage
           path: .coverage/html
+      - name: Commit files
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          # Check the status of the Git repository
+          status=$(git status --porcelain)
+
+          # If the repository is clean, exit with a non-zero status
+          if [ -z "$status" ]; then
+            echo "Nothing to commit, working tree clean"
+            exit 0
+          else
+            git add -A .
+            git commit -am "Generate Files"
+          fi
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}

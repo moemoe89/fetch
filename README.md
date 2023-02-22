@@ -1,5 +1,8 @@
 # fetch
 
+[![CI Workflow](https://github.com/moemoe89/fetch/actions/workflows/ci.yml/badge.svg)](https://github.com/moemoe89/fetch/actions/workflows/ci.yml) <!-- start-coverage --><img src="https://img.shields.io/badge/coverage-100%25-brightgreen"><!-- end-coverage -->
+
+
 fetch is a command line interface (CLI) program written in [Golang](https://go.dev/)
 that can be used to download web pages and save their content to disk for later use. The contents can also be compressed into a zip file for convenience.
 
