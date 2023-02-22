@@ -196,6 +196,7 @@ func fetchAssets(
 	case err := <-errChan:
 		return "", err
 	default:
+		close(errChan)
 	}
 
 	return newBody, nil

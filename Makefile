@@ -18,10 +18,14 @@ lint:
 
 test:
 	mkdir -p .coverage/html
-	go test -v -race -cover -coverprofile=.coverage/pkg.coverage.tmp ./pkg/... && \
-	cat .coverage/pkg.coverage.tmp | grep -v "_mock.go\|_mockgen.go" > .coverage/pkg.coverage && \
-	go tool cover -html=.coverage/pkg.coverage -o .coverage/html/pkg.coverage.html;
-	rm .coverage/pkg.coverage .coverage/pkg.coverage.tmp
+	go test -v -race -cover -coverprofile=.coverage/pkg.coverage ./pkg/... && \
+	cat .coverage/pkg.coverage | grep -v "_mock.go\|_mockgen.go" > .coverage/pkg.mockless.coverage && \
+	go tool cover -html=.coverage/pkg.mockless.coverage -o .coverage/html/pkg.coverage.html;
+	rm .coverage/pkg.coverage .coverage/pkg.mockless.coverage
+
+mock:
+	@echo "\n>>> Generates Mock\n"
+	go generate ./...
 
 .PHONY: build
 

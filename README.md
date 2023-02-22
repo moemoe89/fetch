@@ -3,12 +3,18 @@
 fetch is a command line interface (CLI) program written in [Golang](https://go.dev/)
 that can be used to download web pages and save their content to disk for later use. The contents can also be compressed into a zip file for convenience.
 
+## Flow Diagram
+
+---
+
+![Architecture-Diagram](docs/diagram.png)
+
+
 ## Building fetch
 
 To build `fetch`, clone this repository and compile the application using the following commands:
 
 ```bash
-git clone git@github.com:moemoe89/fetch.git
 cd fetch
 go build -o fetch ./cmd
 ```
@@ -32,6 +38,12 @@ If you want to fetch the assets along with the zip file, include the `--metadata
 
 ```bash
 fetch --metadata https://moemoe89.github.io
+```
+
+or
+
+```bash
+fetch -metadata https://moemoe89.github.io
 ```
 
 > NOTE:

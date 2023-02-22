@@ -26,11 +26,8 @@ func (c *client) Zip(filename string, filePaths, dirs []string) error {
 
 	// Channel to wait for all the goroutines to complete.
 	var wg sync.WaitGroup
-	// Mutex for avoid race conditions.
-	mutex := &sync.Mutex{}
 
-	// Error channel for file paths.
-	errFilePaths := make(chan error, len(filePaths))
+	c.errChan = make(chan error, len(filePaths)+len(dirs))
 
 	// Zip the file with concurrency.
 	for _, filePath := range filePaths {
@@ -39,15 +36,12 @@ func (c *client) Zip(filename string, filePaths, dirs []string) error {
 		go func(filePath string) {
 			defer wg.Done()
 
-			if err := c.addFile(zipWriter, filePath, mutex); err != nil {
-				errFilePaths <- fmt.Errorf("failed to add file to zip: %w", err)
+			if err := c.addFile(zipWriter, filePath); err != nil {
+				c.errChan <- fmt.Errorf("failed to add file to zip: %w", err)
 				return
 			}
 		}(filePath)
 	}
-
-	// Error channel for directories.
-	errDirs := make(chan error, len(dirs))
 
 	// Zip the dir with concurrency.
 	for _, dir := range dirs {
@@ -56,8 +50,8 @@ func (c *client) Zip(filename string, filePaths, dirs []string) error {
 		go func(dir string) {
 			defer wg.Done()
 
-			if err := c.addDir(zipWriter, dir, mutex); err != nil {
-				errDirs <- fmt.Errorf("failed to add dir to zip: %w", err)
+			if err := c.addDir(zipWriter, dir); err != nil {
+				c.errChan <- fmt.Errorf("failed to add dir to zip: %w", err)
 				return
 			}
 		}(dir)
@@ -68,19 +62,18 @@ func (c *client) Zip(filename string, filePaths, dirs []string) error {
 
 	// Check the error channels for any errors.
 	select {
-	case err := <-errFilePaths:
-		return err
-	case err := <-errDirs:
+	case err := <-c.errChan:
 		return err
 	default:
+		close(c.errChan)
 		return nil
 	}
 }
 
 // addFile adds filepath to zip.
-func (c *client) addFile(zipWriter *zip.Writer, filePath string, mutex sync.Locker) error {
-	mutex.Lock()
-	defer mutex.Unlock()
+func (c *client) addFile(zipWriter *zip.Writer, filePath string) error {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
 
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -100,10 +93,7 @@ func (c *client) addFile(zipWriter *zip.Writer, filePath string, mutex sync.Lock
 }
 
 // addDir adds directory to zip.
-func (c *client) addDir(zipWriter *zip.Writer, dir string, mutex sync.Locker) error {
-	mutex.Lock()
-	defer mutex.Unlock()
-
+func (c *client) addDir(zipWriter *zip.Writer, dir string) error {
 	// Walk through all the files in the directory.
 	return filepath.Walk(dir, func(path string, info os.FileInfo, err error) error { //nolint:staticcheck
 		if info.IsDir() {

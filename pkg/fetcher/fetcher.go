@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sync"
 )
 
 // errFailedSetHTTPClient represents an error message when the process of setting the HTTP client fails.
@@ -49,6 +50,8 @@ type HTTPClient interface {
 // It contains an HTTPClient field that is used to make HTTP requests.
 type client struct {
 	httpClient HTTPClient
+	mutex      sync.Mutex
+	errChan    chan error
 }
 
 // New returns an implementation of the Fetcher interface.
