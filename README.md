@@ -1,6 +1,6 @@
 # fetch
 
-[![CI Workflow](https://github.com/moemoe89/fetch/actions/workflows/ci.yml/badge.svg)](https://github.com/moemoe89/fetch/actions/workflows/ci.yml) <!-- start-coverage --><img src="https://img.shields.io/badge/coverage-25-"><!-- end-coverage -->
+[![CI Workflow](https://github.com/moemoe89/fetch/actions/workflows/ci.yml/badge.svg)](https://github.com/moemoe89/fetch/actions/workflows/ci.yml) <!-- start-coverage --><img src="https://img.shields.io/badge/coverage-6.4%25-red"><!-- end-coverage -->
 
 
 fetch is a command line interface (CLI) program written in [Golang](https://go.dev/)
